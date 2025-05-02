@@ -87,7 +87,7 @@
       </button>
     </div>
 
-    <div class="pagination-info" *ngIf="displayedStories.length > 0">
+    <div class="pagination-info" *ngIf="displayedStories().length > 0">
       Showing stories {{currentPage() * pageSize + 1}} -
       {{currentPage() * pageSize + displayedStories().length}}
     </div>
