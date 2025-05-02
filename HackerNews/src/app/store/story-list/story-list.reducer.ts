@@ -1,0 +1,89 @@
+import { createReducer, on } from "@ngrx/store";
+import { Item } from "../../models/story";
+import { storyListChangePage, storyListFetchFail, storyListFetchSuccess, storyListLoadNextPage, storyListPageOnlyChange, storyListSearch } from "./story-list.actions";
+import { paginate } from "../utils";
+
+export interface StoryState {
+  stories: Item[];
+  displayedStories: Item[]; // Stories to show on current page
+  loading: boolean;
+  currentHead?: number;
+  nextHead?: number;
+  activeSearchQuery: string;
+  currentPage: number;
+  totalPages: number;
+}
+
+const initialState: StoryState = {
+  stories: [],
+  displayedStories: [],
+  loading: false,
+  activeSearchQuery: '',
+  currentPage: 0,
+  totalPages: 0
+}
+
+export const StoryListReducer = createReducer(
+  initialState,
+
+  on(
+    storyListLoadNextPage,
+    (state, action): StoryState => ({
+      ...state,
+      loading: true
+    })
+  ),
+
+  on(
+    storyListSearch,
+    (state, action): StoryState => ({
+      ...state,
+      loading: true,
+      stories: [],
+      displayedStories: [],
+      currentPage: 0,
+      currentHead: undefined,
+      nextHead: undefined,
+      activeSearchQuery: action.searchQuery ?? ''
+    })
+  ),
+
+  on(
+    storyListFetchSuccess,
+    (state, action): StoryState => {
+      const { displayedItems, totalPages } = paginate(action.storyPage.items, 20, state.currentPage);
+
+      return {
+        ...state,
+        stories: action.storyPage.items,
+        loading: false,
+        currentHead: action.storyPage.currentHead,
+        nextHead: action.storyPage.nextHead,
+        displayedStories: displayedItems,
+        totalPages: totalPages
+      }
+    }
+  ),
+
+  on(
+    storyListFetchFail,
+    (state): StoryState => ({
+      ...state,
+      loading: false
+    })
+  ),
+
+  on(
+    storyListPageOnlyChange,
+    (state, { newPage }) => {
+      const { displayedItems, totalPages } = paginate(state.stories, 20, newPage);
+
+      return {
+        ...state,
+        currentPage: newPage,
+        displayedStories: displayedItems,
+        totalPages
+      };
+    }
+  )
+)

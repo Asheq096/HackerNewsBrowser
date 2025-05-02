@@ -1,0 +1,95 @@
+<mat-card class="story-container">
+  <mat-card-header>
+    <mat-card-title>Hacker News Stories</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="search-container">
+      <mat-form-field class="search-input">
+        <mat-label>Search stories</mat-label>
+        <input matInput
+               [(ngModel)]="searchQuery"
+               type="text"
+               (keyup.enter)="search()"
+               placeholder="Search by title...">
+      </mat-form-field>
+      <button mat-raised-button
+              color="primary"
+              (click)="search()"
+              [disabled]="isLoading()">
+        Search
+      </button>
+    </div>
+
+    <div class="active-search" *ngIf="activeSearchQuery()">
+      Showing results for: "{{activeSearchQuery()}}"
+      <button mat-button
+              color="warn"
+              (click)="clearSearch()">
+        Clear Search
+      </button>
+    </div>
+
+    <div class="table-container">
+      <mat-table [dataSource]="displayedStories()" class="story-table">
+        <ng-container matColumnDef="id">
+          <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
+          <mat-cell *matCellDef="let story"> {{story.id}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="title">
+          <mat-header-cell *matHeaderCellDef> Title </mat-header-cell>
+          <mat-cell *matCellDef="let story">
+            <a [href]="story.url" target="_blank" class="story-link">
+              {{story.title}}
+            </a>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="by">
+          <mat-header-cell *matHeaderCellDef> Author </mat-header-cell>
+          <mat-cell *matCellDef="let story"> {{story.by}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="time">
+          <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>
+          <mat-cell *matCellDef="let story">
+            {{story.time * 1000 | date:'MM/dd/yy HH:mm'}}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+
+      <div class="loading-spinner" *ngIf="isLoading()">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <div class="no-results" *ngIf="!isLoading() && displayedStories().length === 0">
+        No stories found
+      </div>
+    </div>
+
+    <div class="pagination-controls" *ngIf="displayedStories().length > 0">
+      <button mat-icon-button
+              [disabled]="!canGoPrevious() || isLoading()"
+              (click)="changePage('prev')">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="page-info">
+        Page {{currentPage() + 1}}
+      </span>
+      <button mat-icon-button
+              [disabled]="!canGoNext() || isLoading()"
+              (click)="changePage('next')">
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+
+    <div class="pagination-info" *ngIf="displayedStories.length > 0">
+      Showing stories {{currentPage() * pageSize + 1}} -
+      {{currentPage() * pageSize + displayedStories().length}}
+    </div>
+  </mat-card-content>
+</mat-card>
