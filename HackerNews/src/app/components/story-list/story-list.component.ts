@@ -1,11 +1,10 @@
 import { Component, OnInit, Signal } from '@angular/core';
-import { StoryService } from '../../services/story.service';
 import { Store } from '@ngrx/store';
-import { storyListChangePage, storyListLoadNextPage, storyListSearch } from '../../store/story-list/story-list.actions';
-import { selectCanGoPrevious, selectCanGoNext, selectCurrentPage, selectDisplayedStories, selectIsLoading, selectActiveSearchQuery } from '../../store/story-list/story-list.selectors';
-import { Observable } from 'rxjs';
-import { AppState } from '../../store/app.state';
 import { Item } from '../../models/story';
+import { StoryService } from '../../services/story.service';
+import { AppState } from '../../store/app.state';
+import { storyListChangePage, storyListLoadNextPage, storyListSearch } from '../../store/story-list/story-list.actions';
+import { selectActiveSearchQuery, selectCanGoNext, selectCanGoPrevious, selectCurrentPage, selectDisplayedStories, selectIsLoading } from '../../store/story-list/story-list.selectors';
 
 @Component({
   selector: 'app-story-list',

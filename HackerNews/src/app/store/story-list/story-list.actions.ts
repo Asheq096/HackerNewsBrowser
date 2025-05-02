@@ -1,5 +1,4 @@
 import { createAction, props } from "@ngrx/store";
-import { Item } from "../../models/story";
 import { StoryPage } from "../../models/story-page";
 
 export const storyListLoadNextPage = createAction(

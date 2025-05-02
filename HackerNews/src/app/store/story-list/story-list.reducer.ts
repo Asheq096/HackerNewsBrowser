@@ -1,7 +1,7 @@
 import { createReducer, on } from "@ngrx/store";
 import { Item } from "../../models/story";
-import { storyListChangePage, storyListFetchFail, storyListFetchSuccess, storyListLoadNextPage, storyListPageOnlyChange, storyListSearch } from "./story-list.actions";
 import { paginate } from "../utils";
+import { storyListFetchFail, storyListFetchSuccess, storyListLoadNextPage, storyListPageOnlyChange, storyListSearch } from "./story-list.actions";
 
 export interface StoryState {
   stories: Item[];

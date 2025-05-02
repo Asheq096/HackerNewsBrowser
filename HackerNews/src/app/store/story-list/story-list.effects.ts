@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { act, Actions, createEffect, ofType } from '@ngrx/effects';
-import { of, from } from 'rxjs';
-import { switchMap, map, catchError, withLatestFrom } from 'rxjs/operators';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { selectAllStories, selectStories } from './story-list.selectors';
-import { AppState } from '../app.state';
+import { of } from 'rxjs';
+import { catchError, map, switchMap, withLatestFrom } from 'rxjs/operators';
 import { StoryService } from '../../services/story.service';
+import { AppState } from '../app.state';
 import { storyListChangePage, storyListFetchFail, storyListFetchSuccess, storyListLoadNextPage, storyListPageOnlyChange, storyListSearch } from './story-list.actions';
+import { selectStories } from './story-list.selectors';
 
 @Injectable()
 export class StoryListEffects {
