@@ -40,7 +40,7 @@ export class StoryListComponent implements OnInit {
   }
 
   search() {
-    this.store.dispatch(storyListSearch({}));
+    this.store.dispatch(storyListSearch({ searchQuery: this.searchQuery }));
   }
 
   clearSearch() {
