@@ -45,14 +45,15 @@ export class StoryListEffects {
         if (needsMore) {
           const lastId = state.stories[state.stories.length - 1]?.id;
 
-          return this.storyService.getNextPage(
-            state.activeSearchQuery,
-            lastId,
-            state.currentHead,
-            state.nextHead
-          ).pipe(
-            map(data => storyListFetchSuccess({ storyPage: data, newPage: newPage })),
-            catchError((error) => of(storyListFetchFail({ error })))
+          return of(
+            storyListLoadNextPage({
+              searchQuery: state.activeSearchQuery,
+              lastId,
+              currentHead: state.currentHead,
+              nextHead: state.nextHead,
+              pageSize: 20,
+            }),
+            storyListPageOnlyChange({ newPage })
           );
         }
 
