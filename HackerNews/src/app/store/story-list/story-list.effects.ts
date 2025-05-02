@@ -51,7 +51,7 @@ export class StoryListEffects {
             state.currentHead,
             state.nextHead
           ).pipe(
-            map(data => storyListFetchSuccess({ storyPage: data})),
+            map(data => storyListFetchSuccess({ storyPage: data, newPage: newPage })),
             catchError((error) => of(storyListFetchFail({ error })))
           );
         }

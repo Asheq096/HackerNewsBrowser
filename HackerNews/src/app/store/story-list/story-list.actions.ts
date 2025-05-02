@@ -14,7 +14,7 @@ export const storyListSearch = createAction(
 
 export const storyListFetchSuccess = createAction(
   '[Story List] Fetch Success',
-  props<{ storyPage: StoryPage }>()
+  props<{ storyPage: StoryPage, newPage?: number }>()
 );
 
 export const storyListFetchFail = createAction(

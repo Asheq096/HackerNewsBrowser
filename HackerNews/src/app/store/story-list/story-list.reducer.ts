@@ -51,16 +51,17 @@ export const StoryListReducer = createReducer(
   on(
     storyListFetchSuccess,
     (state, action): StoryState => {
-      const { displayedItems, totalPages } = paginate(action.storyPage.items, 20, state.currentPage);
+      //const { displayedItems, totalPages } = paginate(action.storyPage.items, 20, state.currentPage);
 
       return {
         ...state,
-        stories: action.storyPage.items,
+        stories: [...state.stories, ...action.storyPage.items],
         loading: false,
+        currentPage: action.newPage ?? state.currentPage,
         currentHead: action.storyPage.currentHead,
         nextHead: action.storyPage.nextHead,
-        displayedStories: displayedItems,
-        totalPages: totalPages
+        displayedStories: action.storyPage.items,
+        totalPages: Math.ceil((state.stories.length + action.storyPage.items.length) / 20)
       }
     }
   ),
