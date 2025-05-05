@@ -20,7 +20,6 @@ export class StoryListEffects {
       switchMap((action) =>
         this.storyService.getNextPage(action.searchQuery, action.lastId, action.currentHead, action.nextHead, action.pageSize).pipe(
           map((storyPage) => {
-            console.log(storyPage);
             return storyListFetchSuccess({ storyPage: storyPage })
           }),
           catchError((error) => {
