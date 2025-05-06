@@ -1,38 +1,13 @@
-﻿using HackerNews.API.Services;
-using HackerNews.API.DTOs;
+﻿using HackerNews.API.DTOs;
+using HackerNews.API.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System.Net;
-using System.Reflection;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Tests.Common;
 
 namespace HackerNews.API.Tests
 {
-    public class FakeHttpMessageHandler : HttpMessageHandler
-    {
-        private readonly Dictionary<string, Func<HttpResponseMessage>> _responses = new();
-
-        public void AddResponse(string url, Func<HttpResponseMessage> responseFactory) =>
-            _responses[url] = responseFactory;
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (_responses.TryGetValue(request.RequestUri.ToString(), out var responseFactory))
-                return Task.FromResult(responseFactory());
-
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound) { RequestMessage = request });
-        }
-    }
-
-    // simple IHttpClientFactory implementation that returns a preconfigured HttpClient
-    public class FakeHttpClientFactory : IHttpClientFactory
-    {
-        private readonly HttpClient _client;
-        public FakeHttpClientFactory(HttpClient client) => _client = client;
-        public HttpClient CreateClient(string name) => _client;
-    }
-
     public class HackerNewsServiceTests
     {
         private readonly FakeHttpMessageHandler _handler;
