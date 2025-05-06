@@ -13,7 +13,8 @@ describe('StoryListReducer', () => {
     loading: false,
     activeSearchQuery: '',
     currentPage: 0,
-    totalPages: 0
+    totalPages: 0,
+    hasMoreStories: false
   };
 
   it('sets loading true on LoadNextPage', () => {
@@ -40,7 +41,8 @@ describe('StoryListReducer', () => {
       storyPage: {
         items: [{ id: 42 } as any],
         currentHead: 100,
-        nextHead: 101
+        nextHead: 101,
+        hasMoreStories: true
       }
     });
     const newState = StoryListReducer(initialState, action);

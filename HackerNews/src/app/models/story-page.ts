@@ -4,4 +4,5 @@ export interface StoryPage {
   items: Item[];
   currentHead: number;
   nextHead: number;
+  hasMoreStories: boolean;
 }

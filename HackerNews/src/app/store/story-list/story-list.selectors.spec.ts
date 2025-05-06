@@ -10,7 +10,8 @@ describe('Story selectors', () => {
     currentPage: 1,
     totalPages: 2,
     currentHead: 0,
-    nextHead: 0
+    nextHead: 0,
+    hasMoreStories: true
   };
 
   const appState = { stories: baseState };
@@ -39,8 +40,8 @@ describe('Story selectors', () => {
     expect(selectCanGoNext(appState)).toBeTrue();
   });
 
-  it('selectCanGoNext false when on last page', () => {
-    const lastPageState = { ...appState, stories: { ...baseState, currentPage: 2 } };
+  it('selectCanGoNext false when on last page and hasMoreStories is false', () => {
+    const lastPageState = { ...appState, stories: { ...baseState, currentPage: 1, hasMoreStories: false } };
     expect(selectCanGoNext(lastPageState)).toBeFalse();
   });
 });

@@ -12,6 +12,7 @@ export interface StoryState {
   activeSearchQuery: string;
   currentPage: number;
   totalPages: number;
+  hasMoreStories: boolean;
 }
 
 const initialState: StoryState = {
@@ -20,7 +21,8 @@ const initialState: StoryState = {
   loading: false,
   activeSearchQuery: '',
   currentPage: 0,
-  totalPages: 0
+  totalPages: 0,
+  hasMoreStories: false
 }
 
 export const StoryListReducer = createReducer(
@@ -59,7 +61,8 @@ export const StoryListReducer = createReducer(
         currentHead: action.storyPage.currentHead,
         nextHead: action.storyPage.nextHead,
         displayedStories: action.storyPage.items,
-        totalPages: Math.ceil((state.stories.length + action.storyPage.items.length) / 20)
+        totalPages: Math.ceil((state.stories.length + action.storyPage.items.length) / 20),
+        hasMoreStories: action.storyPage.hasMoreStories
       }
     }
   ),

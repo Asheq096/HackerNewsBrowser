@@ -11,6 +11,7 @@ import {
 } from './story-list.actions';
 import { StoryService } from '../../services/story.service';
 import { of } from 'rxjs';
+import { StoryPage } from '../../models/story-page';
 
 describe('StoryListEffects', () => {
   let actions$: any;
@@ -46,10 +47,11 @@ describe('StoryListEffects', () => {
   });
 
   it('dispatches storyListFetchSuccess with page when storyListLoadNextPage action is received', () => {
-    const page = {
+    const page: StoryPage = {
       items: [{ id: 1 } as any],
       currentHead: 123,
-      nextHead: 122
+      nextHead: 122,
+      hasMoreStories: false
     };
     storyService.getNextPage.and.returnValue(of(page));
 

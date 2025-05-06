@@ -37,6 +37,6 @@ export const selectCanGoPrevious = createSelector(
 export const selectCanGoNext = createSelector(
   selectStories,
   (state: StoryState) => {
-    return state.displayedStories.length % 20 === 0 && state.currentPage < state.totalPages;
+    return state.currentPage < state.totalPages - 1 || state.hasMoreStories;
   }
 );

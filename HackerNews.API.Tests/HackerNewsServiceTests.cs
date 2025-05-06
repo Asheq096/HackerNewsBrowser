@@ -153,8 +153,8 @@ namespace HackerNews.API.Tests
             var page = await _service.GetStoriesWithLinksAsync(999, 11, 11, null, 2);
 
             // Assert
-            Assert.Equal(new[] { 12, 11 }, page.Items.Select(i => i.Id));
-            Assert.Equal(11, page.CurrentHead);
+            Assert.Equal(new[] { 12 }, page.Items.Select(i => i.Id)); // will not return head again
+            Assert.Equal(12, page.CurrentHead); // will update both heads
             Assert.Equal(12, page.NextHead);
         }
 
@@ -614,6 +614,230 @@ namespace HackerNews.API.Tests
 
             // Assert
             Assert.Empty(result.Items);
+        }
+
+        [Fact]
+        public async Task GetStoriesWithLinksAsync_ReturnsHasMoreStoriesTrueWhenThereAreMoreStories()
+        {
+            // Arrange: IDs
+            var ids = new[] { 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(ids)) });
+
+            // all items have Url
+            foreach (var id in ids)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // Act
+            var result = await _service.GetStoriesWithLinksAsync(null, null, null, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 9, 8 }, result.Items.Select(i => i.Id));
+            Assert.Equal(9, result.CurrentHead);
+            Assert.Equal(9, result.NextHead);
+            Assert.True(result.HasMoreStories);
+        }
+
+        [Fact]
+        public async Task GetStoriesWithLinksAsync_ReturnsHasMoreStoriesTrueWhenThereAreMoreStoriesWhenWrapping()
+        {
+            // Arrange: IDs
+            var ids = new[] { 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(ids)) });
+
+            // all items have Url
+            foreach (var id in ids)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // Act
+            var result = await _service.GetStoriesWithLinksAsync(null, null, null, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 9, 8 }, result.Items.Select(i => i.Id));
+            Assert.Equal(9, result.CurrentHead);
+            Assert.Equal(9, result.NextHead);
+            Assert.True(result.HasMoreStories);
+
+            // 2nd page with new IDs added
+            var updatedIds = new[] { 11, 10, 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(updatedIds)) });
+
+            foreach (var id in updatedIds)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // remove cache to force refresh
+            _cache.Remove("newstories");
+
+            var secondPage = await _service.GetStoriesWithLinksAsync(result.Items.Last().Id, result.CurrentHead, result.NextHead, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 7, 11 }, secondPage.Items.Select(i => i.Id));
+            Assert.Equal(9, secondPage.CurrentHead);
+            Assert.Equal(11, secondPage.NextHead); // NextHead is updated to new first element
+            Assert.True(secondPage.HasMoreStories);
+        }
+
+        [Fact]
+        public async Task GetStoriesWithLinksAsync_ReturnsHasMoreStoriesFalseWhenThereAreNoMoreStories()
+        {
+
+            // Arrange: IDs
+            var ids = new[] { 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(ids)) });
+
+            // all items have Url
+            foreach (var id in ids)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // Act
+            var result = await _service.GetStoriesWithLinksAsync(null, null, null, null, 3);
+
+            // Assert
+            Assert.Equal(new[] { 9, 8, 7 }, result.Items.Select(i => i.Id));
+            Assert.Equal(9, result.CurrentHead);
+            Assert.Equal(9, result.NextHead);
+            Assert.False(result.HasMoreStories);
+        }
+
+        [Fact]
+        public async Task GetStoriesWithLinksAsync_ReturnsHasMoreStoriesFalseWhenThereAreNoMoreStoriesWhenWrapping()
+        {
+            // Arrange: IDs
+            var ids = new[] { 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(ids)) });
+
+            // all items have Url
+            foreach (var id in ids)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // Act
+            var result = await _service.GetStoriesWithLinksAsync(null, null, null, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 9, 8 }, result.Items.Select(i => i.Id));
+            Assert.Equal(9, result.CurrentHead);
+            Assert.Equal(9, result.NextHead);
+            Assert.True(result.HasMoreStories);
+
+            // 2nd page with new IDs added
+            var updatedIds = new[] { 10, 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(updatedIds)) });
+
+            foreach (var id in updatedIds)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // remove cache to force refresh
+            _cache.Remove("newstories");
+
+            var secondPage = await _service.GetStoriesWithLinksAsync(result.Items.Last().Id, result.CurrentHead, result.NextHead, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 7, 10 }, secondPage.Items.Select(i => i.Id));
+            Assert.Equal(9, secondPage.CurrentHead);
+            Assert.Equal(10, secondPage.NextHead); // NextHead is updated to new first element
+            Assert.False(secondPage.HasMoreStories);
+        }
+
+        [Fact]
+        public async Task GetStoriesWithLinksAsync_ReturnsHasMoreStoriesFalseWhenThereAreNoMoreStoriesWhenWrapping2()
+        {
+            // Arrange: IDs
+            var ids = new[] { 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(ids)) });
+
+            // all items have Url
+            foreach (var id in ids)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // Act
+            var result = await _service.GetStoriesWithLinksAsync(null, null, null, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 9, 8 }, result.Items.Select(i => i.Id));
+            Assert.Equal(9, result.CurrentHead);
+            Assert.Equal(9, result.NextHead);
+            Assert.True(result.HasMoreStories);
+
+            // 2nd page with new IDs added
+            var updatedIds = new[] { 11, 10, 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(updatedIds)) });
+
+            foreach (var id in updatedIds)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // remove cache to force refresh
+            _cache.Remove("newstories");
+
+            // get next page with startAfterId=24, but the currentHead (25) has fallen off
+            var secondPage = await _service.GetStoriesWithLinksAsync(result.Items.Last().Id, result.CurrentHead, result.NextHead, null, 2);
+
+            // Assert: should handle the case where head isn't found and proceed correctly
+            Assert.Equal(new[] { 7, 11 }, secondPage.Items.Select(i => i.Id));
+            Assert.Equal(9, secondPage.CurrentHead);
+            Assert.Equal(11, secondPage.NextHead); // NextHead is updated to new first element
+            Assert.True(secondPage.HasMoreStories);
+
+            // 3nd page with new IDs added
+            var updatedIds2 = new[] { 12, 11, 10, 9, 8, 7 };
+            _handler.AddResponse("https://hacker-news.firebaseio.com/v0/newstories.json",
+                () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(updatedIds2)) });
+
+            foreach (var id in updatedIds2)
+            {
+                var item = new ItemDto { Id = id, Url = $"url{id}" };
+                _handler.AddResponse($"https://hacker-news.firebaseio.com/v0/item/{id}.json",
+                    () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(item)) });
+            }
+
+            // remove cache to force refresh
+            _cache.Remove("newstories");
+
+            var thirdPage = await _service.GetStoriesWithLinksAsync(secondPage.Items.Last().Id, secondPage.CurrentHead, secondPage.NextHead, null, 2);
+
+            // Assert
+            Assert.Equal(new[] { 10, 12 }, thirdPage.Items.Select(i => i.Id));
+            Assert.Equal(11, thirdPage.CurrentHead);
+            Assert.Equal(12, thirdPage.NextHead);
+            Assert.False(thirdPage.HasMoreStories);
         }
     }
 }

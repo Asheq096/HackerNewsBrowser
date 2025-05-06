@@ -40,6 +40,8 @@ namespace HackerNews.API.Services
                 int startAfterIdIndex = Array.IndexOf(allIds, startAfterId.Value);
                 if (startAfterIdIndex >= 0)
                     index = (startAfterIdIndex + 1);
+                else
+                    nextHead = allIds[0];
                 // Wrap if at the end
                 if (index >= allIds.Length)
                 { // wrap but also set the nextHead to index 0
@@ -50,17 +52,22 @@ namespace HackerNews.API.Services
 
             var items = new List<ItemDto>();
             int count = 0;
+            var hasMoreStories = false;
 
-            while (count < pageSize)
+            while (count < pageSize + 1) // +1 to load an extra story to figure out the value of HasMoreStories
             {
                 var id = allIds[index];
 
                 // check if we hit the head OR at last element and we never hit head (new stories coming in pushed it out)
                 if (currentHead == allIds[index] || (index == allIds.Length - 1 && currentHead.HasValue && !allIds.Contains(currentHead.Value)))
                 {
-                    currentHead = nextHead;
-                    nextHead = allIds[0];
-                    index = 0; // wrap to the beginning now and start processing new items (if there are, if not will break out below)
+                    if (count != pageSize) // if false, then we are just setting HasMoreStories, not messing with heads
+                    {
+                        currentHead = nextHead;
+                        nextHead = allIds[0];
+                        index = 0; // wrap to the beginning now and start processing new items (if there are, if not will break out below)
+                        id = allIds[index];
+                    }
                     if (currentHead == allIds[index]) // there are no new items, we basically hit the head already
                         break;
                 }
@@ -88,7 +95,11 @@ namespace HackerNews.API.Services
                     )
                 )
                 {
-                    items.Add(item);
+                    if (count == pageSize) // last item, don't add, just set HasMoreStories = true
+                        hasMoreStories = true;
+                    else
+                        items.Add(item);
+
                     count++;
                 }
 
@@ -106,6 +117,7 @@ namespace HackerNews.API.Services
                 Items = items,
                 CurrentHead = currentHead,
                 NextHead = nextHead,
+                HasMoreStories = hasMoreStories
             };
         }
 
