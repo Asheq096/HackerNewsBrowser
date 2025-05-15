@@ -40,9 +40,9 @@ namespace HackerNews.API.Services
                 int startAfterIdIndex = Array.IndexOf(allIds, startAfterId.Value);
                 if (startAfterIdIndex >= 0)
                     index = (startAfterIdIndex + 1);
-                else
+                else // index fell off, wrap to the first element
                     nextHead = allIds[0];
-                // Wrap if at the end
+                // wrap if at the end
                 if (index >= allIds.Length)
                 { // wrap but also set the nextHead to index 0
                     index = 0;

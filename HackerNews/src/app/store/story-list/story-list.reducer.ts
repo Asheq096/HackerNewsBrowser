@@ -30,7 +30,7 @@ export const StoryListReducer = createReducer(
 
   on(
     storyListLoadNextPage,
-    (state, action): StoryState => ({
+    (state): StoryState => ({
       ...state,
       loading: true
     })

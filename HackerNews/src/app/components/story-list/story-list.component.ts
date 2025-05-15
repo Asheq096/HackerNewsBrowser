@@ -24,7 +24,7 @@ export class StoryListComponent implements OnInit {
   canGoNext: Signal<boolean>;
   currentPage: Signal<number>;
 
-  constructor(private storyService: StoryService, private readonly store: Store<AppState>) {
+  constructor(private readonly store: Store<AppState>) {
     this.isLoading = this.store.selectSignal(selectIsLoading);
     this.displayedStories = this.store.selectSignal(selectDisplayedStories);
     this.activeSearchQuery = this.store.selectSignal(selectActiveSearchQuery);
